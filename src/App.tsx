@@ -1,7 +1,9 @@
+import CanvasEditor from './canvas/components/canvas-editor'
+
 function App() {
   return (
-    <div>
-      <h1 className='text-3xl font-bold underline'></h1>
+    <div className='w-screen h-screen flex items-center justify-center'>
+      <CanvasEditor />
     </div>
   )
 }
