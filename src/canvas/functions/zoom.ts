@@ -9,26 +9,29 @@
  */
 export const applyZoom = (
   currentZoom: number,
-  deltaY: number,
-  offset: { x: number; y: number },
-  mousePosition: { x: number; y: number }
+  delta: number,
+  canvasOffset: { x: number; y: number },
+  pointerPosition: { x: number; y: number },
+  minZoom: number = 0.5, // Límite mínimo
+  maxZoom: number = 3 // Límite máximo
 ) => {
-  const zoomFactor = 0.1
-  const newZoom = Math.max(
-    0.5,
-    Math.min(5, currentZoom - deltaY * zoomFactor * 0.01)
-  ) // Clamp zoom between 0.5x and 5x
+  const zoomFactor = delta > 0 ? 0.9 : 1.1 // Escalar según el desplazamiento
+  let newZoom = currentZoom * zoomFactor
 
-  // Calculate new offset to keep zoom centered on the mouse position
-  const zoomRatio = newZoom / currentZoom
-  const offsetX = (mousePosition.x - offset.x) * (1 - zoomRatio)
-  const offsetY = (mousePosition.y - offset.y) * (1 - zoomRatio)
+  // Aplicar límites al zoom
+  if (newZoom < minZoom) newZoom = minZoom
+  if (newZoom > maxZoom) newZoom = maxZoom
+
+  // Ajustar el offset para centrar el zoom en el puntero
+  const zoomChange = newZoom / currentZoom
+  const offsetX = pointerPosition.x - pointerPosition.x * zoomChange
+  const offsetY = pointerPosition.y - pointerPosition.y * zoomChange
 
   return {
     newZoom,
     offset: {
-      x: offset.x + offsetX,
-      y: offset.y + offsetY,
+      x: canvasOffset.x + offsetX,
+      y: canvasOffset.y + offsetY,
     },
   }
 }
