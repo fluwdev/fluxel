@@ -2,8 +2,10 @@ import { create } from 'zustand'
 
 export type CanvasState = {
   canvas: {
-    width: number
-    height: number
+    size: {
+      width: number
+      height: number
+    }
     sizePixel: number
     gridVisible: boolean
     colorGrid: string
@@ -17,8 +19,10 @@ export type CanvasState = {
 export const useCanvasStore = create<CanvasState>((set) => ({
   // The canvas configuration
   canvas: {
-    width: 480,
-    height: 480,
+    size: {
+      width: 480,
+      height: 480,
+    },
     sizePixel: 16,
     gridVisible: true,
     colorGrid: 'rgba(0, 0, 0, 0.1)',
