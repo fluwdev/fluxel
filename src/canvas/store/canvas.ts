@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-type CanvasState = {
+export type CanvasState = {
   canvas: {
     width: number
     height: number
@@ -8,6 +8,7 @@ type CanvasState = {
     gridVisible: boolean
     colorGrid: string
     backgroundColor: string
+    zoom: number
   }
   changeViewport: (width: number, height: number) => void
   changeBackgroundColor: (color: string) => void
@@ -22,6 +23,7 @@ export const useCanvasStore = create<CanvasState>((set) => ({
     gridVisible: true,
     colorGrid: 'rgba(0, 0, 0, 0.1)',
     backgroundColor: 'white',
+    zoom: 1,
   },
   // Change the viewport size
   changeViewport: (width, height) =>
