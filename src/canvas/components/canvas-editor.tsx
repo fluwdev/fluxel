@@ -1,19 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { useCanvasStore } from '../store/canvas'
 import { drawLine } from '../functions/draw-line'
-import { applyZoom, constrainCanvasPosition } from '@canvas/functions/zoom'
+import { applyZoom } from '@canvas/functions/zoom'
 
 export default function CanvasEditor() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const { canvas } = useCanvasStore((state) => state)
   const [zoom, setZoom] = useState(1) // Initial zoom level
   const [canvasOffset, setCanvasOffset] = useState({ x: 0, y: 0 }) // Offset for panning
-  const [isDragging, setIsDragging] = useState(false) // Dragging state
-  const [lastMousePosition, setLastMousePosition] = useState<{
-    x: number
-    y: number
-  } | null>(null)
-  const [isSpacePressed, setIsSpacePressed] = useState(false) // Space key state
 
   useEffect(() => {
     drawingGrid()
@@ -30,7 +24,6 @@ export default function CanvasEditor() {
 
     // Apply zoom and offset
     ctx.scale(zoom, zoom)
-    ctx.translate(canvasOffset.x / zoom, canvasOffset.y / zoom)
 
     // Draw Y Axis
     for (let i = 0; i < canvas.width; i += canvas.sizePixel) {
@@ -45,67 +38,27 @@ export default function CanvasEditor() {
   }
 
   const handleWheel = (event: React.WheelEvent) => {
-    if (!event.altKey) return
+    if (event.altKey) {
+      event.preventDefault()
 
-    event.preventDefault()
-    const { newZoom, offset } = applyZoom(zoom, event.deltaY, canvasOffset, {
-      x: event.clientX,
-      y: event.clientY,
-    })
+      const { newZoom, offset } = applyZoom(
+        zoom,
+        event.deltaY,
+        canvasOffset,
+        { x: event.clientX, y: event.clientY },
+        1, // Zoom mínimo
+        3 // Zoom máximo
+      )
 
-    setZoom(newZoom)
-    setCanvasOffset(offset)
-  }
-
-  const handleMouseDown = (event: React.MouseEvent) => {
-    if (!isSpacePressed) return // Only start dragging if space is pressed
-    setIsDragging(true)
-    setLastMousePosition({ x: event.clientX, y: event.clientY })
-  }
-
-  const handleMouseMove = (event: React.MouseEvent) => {
-    if (!isDragging || !lastMousePosition) return
-
-    const dx = event.clientX - lastMousePosition.x
-    const dy = event.clientY - lastMousePosition.y
-
-    // Update offset and constrain the position
-    const newOffset = constrainCanvasPosition(
-      { x: canvasOffset.x + dx, y: canvasOffset.y + dy },
-      zoom,
-      canvas.width,
-      canvas.height
-    )
-
-    setCanvasOffset(newOffset)
-    setLastMousePosition({ x: event.clientX, y: event.clientY })
-  }
-
-  const handleMouseUp = () => {
-    setIsDragging(false)
-    setLastMousePosition(null)
-  }
-
-  const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (event.code === 'Space') {
-      setIsSpacePressed(true)
-    }
-  }
-
-  const handleKeyUp = (event: React.KeyboardEvent) => {
-    if (event.code === 'Space') {
-      setIsSpacePressed(false)
+      setZoom(newZoom)
+      setCanvasOffset(offset)
     }
   }
 
   return (
     <div
       onWheel={handleWheel}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onKeyDown={handleKeyDown}
-      onKeyUp={handleKeyUp}
+      tabIndex={0}
       className='w-full h-full flex items-center justify-center'
     >
       <canvas
