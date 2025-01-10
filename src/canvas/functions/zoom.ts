@@ -1,3 +1,5 @@
+import { clamp } from './clamp'
+
 /**
  * Applies zoom to the canvas and adjusts the offset to keep the zoom centered around the mouse position.
  *
@@ -12,15 +14,14 @@ export const applyZoom = (
   delta: number,
   canvasOffset: { x: number; y: number },
   pointerPosition: { x: number; y: number },
-  minZoom: number = 0.5, // Límite mínimo
-  maxZoom: number = 3 // Límite máximo
+  minZoom: number = 0.5, // Limit Min
+  maxZoom: number = 3 // Limit Max
 ) => {
-  const zoomFactor = delta > 0 ? 0.9 : 1.1 // Escalar según el desplazamiento
+  const zoomFactor = delta > 0 ? 0.9 : 1.1 // Scale
   let newZoom = currentZoom * zoomFactor
 
-  // Aplicar límites al zoom
-  if (newZoom < minZoom) newZoom = minZoom
-  if (newZoom > maxZoom) newZoom = maxZoom
+  // Aplicar clamping al zoom
+  newZoom = clamp(newZoom, minZoom, maxZoom)
 
   // Ajustar el offset para centrar el zoom en el puntero
   const zoomChange = newZoom / currentZoom
@@ -40,22 +41,22 @@ export const applyZoom = (
  * Constrains the canvas offset to ensure it doesn't go out of bounds.
  *
  * @param {{ x: number, y: number }} offset - Current canvas offset.
+ * @param {{width: number, height: number}} canvasSize - Canvas size.
+ * @param {{width: number, height: number}} viewportSize - Viewport Size.
  * @param {number} zoom - Current zoom level.
- * @param {number} canvasWidth - Canvas width.
- * @param {number} canvasHeight - Canvas height.
  * @returns {{ x: number, y: number }} - Adjusted offset within bounds.
  */
 export const constrainCanvasPosition = (
   offset: { x: number; y: number },
-  zoom: number,
-  canvasWidth: number,
-  canvasHeight: number
+  canvasSize: { width: number; height: number },
+  viewportSize: { width: number; height: number },
+  zoom: number
 ) => {
-  const maxOffsetX = (canvasWidth * (zoom - 1)) / zoom
-  const maxOffsetY = (canvasHeight * (zoom - 1)) / zoom
+  const maxOffsetX = Math.max(0, canvasSize.width - viewportSize.width / zoom)
+  const maxOffsetY = Math.max(0, canvasSize.height - viewportSize.height / zoom)
 
   return {
-    x: Math.min(0, Math.max(-maxOffsetX, offset.x)),
-    y: Math.min(0, Math.max(-maxOffsetY, offset.y)),
+    x: clamp(offset.x, 0, maxOffsetX),
+    y: clamp(offset.y, 0, maxOffsetY),
   }
 }
